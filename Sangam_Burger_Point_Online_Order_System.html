@@ -1,0 +1,213 @@
+```html
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>سنگم برگر پوائنٹ</title>
+
+<style>
+.top-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+.top-actions button,.userbar button{border:0;border-radius:8px;padding:9px 13px;cursor:pointer;font-weight:bold}
+.userbar{background:white;padding:14px;border-radius:12px;margin-bottom:18px;box-shadow:0 3px 12px rgba(0,0,0,.08);display:flex;justify-content:space-between;gap:10px;align-items:center}
+.userbar button{background:#dc2626;color:#fff}
+.checkout{background:#fff;margin-top:25px;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.1)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}
+.field input,.field textarea{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:9px;font-size:15px;direction:rtl}
+.checkout h2{color:#dc2626;margin-bottom:18px}.order-preview{margin-top:22px;padding:16px;background:#f9fafb;border-radius:12px}
+.checkout-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #e5e7eb}.checkout-total{margin-top:15px;font-size:21px;font-weight:bold;color:#16a34a}
+.place-order-btn{width:100%;margin-top:18px;padding:14px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-size:18px;font-weight:bold;cursor:pointer}
+.order-result{margin-top:20px;padding:18px;background:#ecfdf5;border:1px solid #86efac;border-radius:12px;line-height:1.9}
+.admin-head{background:white;padding:22px;border-radius:15px;display:flex;justify-content:space-between;align-items:center;gap:15px}
+.saved-order{background:white;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-top:12px;line-height:1.9}
+.saved-head{display:flex;justify-content:space-between;gap:10px}.status{background:#dcfce7;color:#166534;padding:3px 9px;border-radius:999px;font-weight:bold}
+.status-btn{border:0;background:#2563eb;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
+.new-notice{margin-top:12px;background:#fef3c7;border:1px solid #f59e0b;padding:12px;border-radius:10px;font-weight:bold}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center;padding:15px;z-index:20}
+.modal-card{background:white;border-radius:15px;padding:25px;width:min(500px,100%);position:relative}.close{position:absolute;left:12px;top:8px;border:0;background:none;font-size:28px;cursor:pointer}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.admin-head,.userbar{flex-direction:column;align-items:stretch}.saved-head{flex-direction:column}}
+</style>
+
+</head>
+
+
+<body>
+<header>
+  <h1>🍔 سنگم برگر پوائنٹ</h1>
+  <div class="top-actions">
+    <button onclick="showPage('customer')">🛒 Customer App</button>
+    <button onclick="showPage('admin')">📋 Admin Orders</button>
+    <button onclick="openLogin()">🔐 Login</button>
+  </div>
+  <div class="search-box">
+    <input type="text" id="search" placeholder="🔍 برگر یا کھانے کی چیز تلاش کریں..." onkeyup="searchProducts()">
+  </div>
+  <button class="cart-button" onclick="toggleCart()">🛒 Cart (<span id="cartCount">0</span>)</button>
+</header>
+
+<main class="container">
+<section id="customerPage">
+  <div class="userbar" id="userbar">👤 Guest — Order دینے کے لیے Login کریں۔ <button onclick="openLogin()">Login / Sign in</button></div>
+
+  <div class="products" id="products">
+    <div class="product" data-name="fries"><div class="emoji">🍟</div><h2>Fries</h2><div class="price">Rs. 150</div><button class="add-btn" onclick="addToCart('Fries',150)">Add to Cart</button></div>
+    <div class="product" data-name="shawarma"><div class="emoji">🌯</div><h2>Shawarma</h2><div class="price">Rs. 200</div><button class="add-btn" onclick="addToCart('Shawarma',200)">Add to Cart</button></div>
+    <div class="product" data-name="pizza"><div class="emoji">🍕</div><h2>Nan Pizza</h2><div class="price">Rs. 300</div><button class="add-btn" onclick="addToCart('Nan Pizza',300)">Add to Cart</button></div>
+    <div class="product" data-name="zinger"><div class="emoji">🍔</div><h2>Zinger Burger</h2><div class="price">Rs. 250</div><button class="add-btn" onclick="addToCart('Zinger Burger',250)">Add to Cart</button></div>
+    <div class="product" data-name="burger"><div class="emoji">🍔</div><h2>Chicken Burger</h2><div class="price">Rs. 220</div><button class="add-btn" onclick="addToCart('Chicken Burger',220)">Add to Cart</button></div>
+    <div class="product" data-name="drink"><div class="emoji">🥤</div><h2>Cold Drink</h2><div class="price">Rs. 100</div><button class="add-btn" onclick="addToCart('Cold Drink',100)">Add to Cart</button></div>
+  </div>
+
+  <div id="cart">
+    <h2>🛒 آپ کی Cart</h2>
+    <div id="cartItems"></div>
+    <div class="total">Total: Rs. <span id="total">0</span></div>
+    <button class="clear-btn" onclick="clearCart()">🗑️ Cart خالی کریں</button>
+  </div>
+
+  <div class="checkout" id="checkout">
+    <h2>🧾 Checkout / Place Order</h2>
+    <form onsubmit="placeOrder(event)">
+      <div class="form-grid">
+        <div class="field"><label>👤 Customer Name</label><input id="customerName" required></div>
+        <div class="field"><label>📱 Phone Number</label><input id="phone" type="tel" placeholder="03XXXXXXXXX" required></div>
+        <div class="field full"><label>📍 Complete Delivery Address</label><textarea id="address" rows="3" placeholder="گھر نمبر، گلی، علاقہ، شہر..." required></textarea></div>
+        <div class="field full"><label>📧 Email</label><input id="email" type="email" required></div>
+      </div>
+      <div class="order-preview">
+        <h3>🛒 Order List</h3><div id="checkoutItems"></div>
+        <div class="checkout-total">💰 Total: Rs. <span id="checkoutTotal">0</span></div>
+      </div>
+      <button class="place-order-btn" type="submit">📦 Place Order</button>
+    </form>
+    <div id="orderResult" class="order-result" style="display:none"></div>
+  </div>
+</section>
+
+<section id="adminPage" style="display:none">
+  <div class="admin-head">
+    <div><h2>📋 Admin Order Panel</h2><p>نئے Orders، Customer Address اور Order Status یہاں دیکھیں۔</p></div>
+    <button class="clear-btn" onclick="clearOrders()">🗑️ Orders صاف کریں</button>
+  </div>
+  <div id="newOrderNotice" class="new-notice" style="display:none">🔔 نیا Order آیا ہے!</div>
+  <div id="ordersList"></div>
+</section>
+</main>
+
+<div class="modal" id="loginModal">
+  <div class="modal-card">
+    <button class="close" onclick="closeLogin()">×</button>
+    <h2>🔐 Customer Login</h2>
+    <form onsubmit="loginUser(event)">
+      <div class="field"><label>👤 نام</label><input id="loginName" required></div>
+      <div class="field"><label>📧 Email</label><input id="loginEmail" type="email" required></div>
+      <div class="field"><label>🔑 Password</label><input id="loginPassword" type="password" required></div>
+      <button class="place-order-btn">Login / Sign in</button>
+    </form>
+  </div>
+</div>
+
+<footer>سنگم برگر پوائنٹ © 2026</footer>
+
+<script>
+let cart = [];
+let currentUser = JSON.parse(localStorage.getItem("sangamCurrentUser") || "null");
+let lastSeenOrderCount = Number(localStorage.getItem("sangamSeenCount") || "0");
+
+function orders(){ return JSON.parse(localStorage.getItem("sangamOrders") || "[]"); }
+function saveOrders(v){ localStorage.setItem("sangamOrders", JSON.stringify(v)); }
+
+function showPage(page){
+  document.getElementById("customerPage").style.display = page==="customer" ? "block":"none";
+  document.getElementById("adminPage").style.display = page==="admin" ? "block":"none";
+  if(page==="admin") { updateOrdersList(); document.getElementById("newOrderNotice").style.display="none"; }
+}
+
+function addToCart(name,price){
+  const x=cart.find(i=>i.name===name);
+  if(x)x.quantity++; else cart.push({name,price,quantity:1});
+  updateCart(); alert(name+" Cart میں شامل ہو گیا ہے!");
+}
+function updateCart(){
+  let total=0,count=0;
+  const box=document.getElementById("cartItems"); box.innerHTML="";
+  cart.forEach((i,n)=>{
+    total+=i.price*i.quantity; count+=i.quantity;
+    box.innerHTML+=`<div class="cart-item"><div><strong>${esc(i.name)}</strong><br>Rs. ${i.price}</div><div class="quantity"><button onclick="dec(${n})">−</button><strong>${i.quantity}</strong><button onclick="inc(${n})">+</button></div><strong>Rs. ${(i.price*i.quantity).toLocaleString()}</strong></div>`;
+  });
+  if(!cart.length)box.innerHTML='<div class="empty">Cart ابھی خالی ہے۔</div>';
+  document.getElementById("cartCount").innerText=count; document.getElementById("total").innerText=total.toLocaleString();
+  updateCheckout();
+}
+function inc(n){cart[n].quantity++;updateCart()}
+function dec(n){if(cart[n].quantity>1)cart[n].quantity--;else cart.splice(n,1);updateCart()}
+function clearCart(){cart=[];updateCart()}
+function toggleCart(){const x=document.getElementById("cart");x.style.display=x.style.display==="block"?"none":"block"}
+function updateCheckout(){
+  let total=0; const x=document.getElementById("checkoutItems");x.innerHTML="";
+  cart.forEach(i=>{let t=i.price*i.quantity;total+=t;x.innerHTML+=`<div class="checkout-row"><span>${esc(i.name)} × ${i.quantity}</span><strong>Rs. ${t.toLocaleString()}</strong></div>`});
+  if(!cart.length)x.innerHTML='<div class="empty">Cart میں کوئی چیز نہیں ہے۔</div>';
+  document.getElementById("checkoutTotal").innerText=total.toLocaleString();
+}
+function openLogin(){document.getElementById("loginModal").style.display="flex"}
+function closeLogin(){document.getElementById("loginModal").style.display="none"}
+function loginUser(e){
+  e.preventDefault();
+  currentUser={name:loginName.value.trim(),email:loginEmail.value.trim()};
+  localStorage.setItem("sangamCurrentUser",JSON.stringify(currentUser));
+  customerName.value=currentUser.name; email.value=currentUser.email;
+  closeLogin(); renderUser(); alert("Login کامیاب ہو گیا!");
+}
+function renderUser(){
+  document.getElementById("userbar").innerHTML=currentUser
+    ? `👤 ${esc(currentUser.name)} — ${esc(currentUser.email)} <button onclick="logout()">Logout</button>`
+    : `👤 Guest — Order دینے کے لیے Login کریں۔ <button onclick="openLogin()">Login / Sign in</button>`;
+}
+function logout(){currentUser=null;localStorage.removeItem("sangamCurrentUser");renderUser()}
+function placeOrder(e){
+  e.preventDefault();
+  if(!currentUser){alert("پہلے Login کریں۔");openLogin();return}
+  if(!cart.length){alert("Cart خالی ہے۔");return}
+  const total=cart.reduce((s,i)=>s+i.price*i.quantity,0);
+  const order={
+    id:"SB-"+Date.now().toString().slice(-8),customer:customerName.value.trim(),
+    phone:phone.value.trim(),address:address.value.trim(),email:email.value.trim(),
+    items:cart.map(i=>({...i})),total,status:"نیا Order",time:new Date().toLocaleString("en-PK")
+  };
+  const a=orders();a.unshift(order);saveOrders(a);
+  document.getElementById("orderResult").style.display="block";
+  document.getElementById("orderResult").innerHTML=`<h3>✅ Order Successfully Placed!</h3>
+    <p>🆔 <strong>${esc(order.id)}</strong></p><p>👤 ${esc(order.customer)}</p><p>📱 ${esc(order.phone)}</p>
+    <p>📍 ${esc(order.address)}</p><p>📧 ${esc(order.email)}</p><p>💰 <strong>Rs. ${order.total.toLocaleString()}</strong></p>
+    <p>📦 Status: ${esc(order.status)}</p>`;
+  cart=[];updateCart();updateOrdersList();alert("🔔 Order ہو گیا! Order ID: "+order.id);
+}
+function updateOrdersList(){
+  const box=document.getElementById("ordersList"),a=orders();
+  if(!a.length){box.innerHTML='<div class="empty">ابھی کوئی Order نہیں ہے۔</div>';return}
+  box.innerHTML=a.map(o=>`<div class="saved-order">
+    <div class="saved-head"><strong>🆔 ${esc(o.id)}</strong><span class="status">${esc(o.status)}</span></div>
+    <p>👤 <strong>Customer:</strong> ${esc(o.customer)}</p><p>📱 <strong>Phone:</strong> ${esc(o.phone)}</p>
+    <p>📍 <strong>Address:</strong> ${esc(o.address)}</p><p>📧 <strong>Email:</strong> ${esc(o.email)}</p>
+    <p>🕒 ${esc(o.time)}</p><p><strong>🛒 Items:</strong></p><ul>${o.items.map(i=>`<li>${esc(i.name)} × ${i.quantity}</li>`).join("")}</ul>
+    <p>💰 <strong>Total: Rs. ${o.total.toLocaleString()}</strong></p>
+    <button class="status-btn" onclick="nextStatus('${o.id}')">Status تبدیل کریں</button>
+  </div>`).join("");
+}
+function nextStatus(id){
+  const a=orders(),o=a.find(x=>x.id===id),s=["نیا Order","تیاری میں","رائیڈر کے پاس","Delivered","Cancelled"];
+  if(!o)return;o.status=s[(s.indexOf(o.status)+1)%s.length];saveOrders(a);updateOrdersList();
+}
+function clearOrders(){if(confirm("تمام Orders ختم کریں؟")){localStorage.removeItem("sangamOrders");updateOrdersList()}}
+function searchProducts(){
+  const q=document.getElementById("search").value.toLowerCase();
+  document.querySelectorAll(".product").forEach(p=>p.style.display=p.dataset.name.includes(q)?"block":"none");
+}
+function esc(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+
+renderUser(); updateCart(); updateOrdersList();
+</script>
+</body>
+</html>
